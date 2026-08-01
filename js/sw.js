@@ -1,15 +1,18 @@
 // ===== TahajjudY Service Worker =====
 // MUHIM: JS/CSS o'zgartirilganda CACHE_VERSION'ni oshiring, aks holda
 // eski nusxa keshdan qaytaveradi (bu bug oldingi loyihalarda ham chiqqan).
-const CACHE_VERSION = 'tahajjudy-v1';
+const CACHE_VERSION = 'tahajjudy-v2';
 
 const CORE_ASSETS = [
   'index.html',
   'dashboard.html',
+  'settings.html',
   'css/styles.css',
   'js/firebase-config.js',
   'js/auth.js',
   'js/dashboard.js',
+  'js/pwa.js',
+  'js/settings.js',
   'manifest.json',
   'assets/logo.png'
 ];
