@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sozlamalar — TahajjudY</title>
+<meta name="theme-color" content="#0C2419">
+<script>
+  (function(){
+    var saved = localStorage.getItem('tahajjudy-theme');
+    var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/logo.png">
+<link rel="apple-touch-icon" href="assets/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="dashboard.html" class="brand" style="text-decoration:none;">
+      <img src="assets/logo.png" alt="TahajjudY logotipi">
+      <span>Tahajjud<em>Y</em></span>
+    </a>
+    <a href="dashboard.html" class="cta-btn ghost-btn">← Dashboard</a>
+  </div>
+</header>
+
+<section class="section settings-section">
+  <div class="wrap wrap-narrow">
+    <h1 class="dash-title" style="margin-bottom:8px;">Sozlamalar</h1>
+    <p style="color:var(--ink-soft);margin-bottom:32px;">Ilovani o'zingizga moslashtiring.</p>
+
+    <div class="card-block settings-block">
+      <h3>🎨 Ko'rinish</h3>
+      <div class="settings-row">
+        <span>Tungi rejim (Dark mode)</span>
+        <label class="switch">
+          <input type="checkbox" class="theme-switch" id="themeSwitch">
+          <span class="switch-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="card-block settings-block">
+      <h3>👤 Hisob</h3>
+      <div class="settings-row settings-row-col">
+        <label for="nameField" style="font-size:.88rem;color:var(--ink-soft);margin-bottom:8px;">Ismingiz</label>
+        <div class="name-edit-row">
+          <input type="text" id="nameField" class="guest-name-field" style="margin-bottom:0;" maxlength="30">
+          <button id="saveNameBtn" class="btn-primary" style="padding:12px 20px;font-size:.88rem;">Saqlash</button>
+        </div>
+        <p class="save-status" id="nameSaveStatus"></p>
+      </div>
+      <div class="settings-row">
+        <span id="accountTypeLabel">Hisob turi</span>
+        <span class="badge" id="accountTypeBadge">—</span>
+      </div>
+    </div>
+
+    <div class="card-block settings-block">
+      <h3>📲 Ilova</h3>
+      <div class="settings-row">
+        <span>Ilova sifatida o'rnatish</span>
+        <button id="installBtn" class="cta-btn install-btn" hidden>O'rnatish</button>
+      </div>
+      <div class="settings-row">
+        <span>Keshni tozalash</span>
+        <button id="clearCacheBtn" class="cta-btn ghost-btn">Tozalash</button>
+      </div>
+      <p class="save-status" id="cacheStatus"></p>
+    </div>
+
+    <button id="signOutBtn" class="btn-ghost-danger">Hisobdan chiqish</button>
+  </div>
+</section>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/pwa.js"></script>
+<script src="js/settings.js"></script>
+</body>
+</html>
