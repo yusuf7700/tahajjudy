@@ -11,9 +11,7 @@ const CORE_ASSETS = [
   'js/auth.js',
   'js/dashboard.js',
   'manifest.json',
-  'assets/logo.png',
-  'icons/icon-192.png',
-  'icons/icon-512.png'
+  'assets/logo.png'
 ];
 
 self.addEventListener('install', (event) => {
