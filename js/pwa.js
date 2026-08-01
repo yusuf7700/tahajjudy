@@ -36,9 +36,29 @@ function registerServiceWorker() {
 
 let deferredInstallPrompt = null;
 
+function isIOS() {
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
+}
+
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
 function wireInstallPrompt(buttonId) {
   const installBtn = document.getElementById(buttonId);
   if (!installBtn) return;
+
+  if (isStandalone()) {
+    installBtn.hidden = true;
+    return;
+  }
+
+  if (isIOS()) {
+    // Safari beforeinstallprompt'ni qo'llab-quvvatlamaydi — qo'lda ko'rsatma beramiz
+    installBtn.hidden = false;
+    installBtn.addEventListener('click', () => showIOSInstallModal());
+    return;
+  }
 
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
@@ -59,6 +79,29 @@ function wireInstallPrompt(buttonId) {
 
   window.addEventListener('appinstalled', () => {
     installBtn.hidden = true;
+  });
+}
+
+function showIOSInstallModal() {
+  let modal = document.getElementById('iosInstallModal');
+  if (modal) { modal.hidden = false; return; }
+
+  modal = document.createElement('div');
+  modal.id = 'iosInstallModal';
+  modal.className = 'ios-install-overlay';
+  modal.innerHTML = `
+    <div class="ios-install-card">
+      <h3>📲 Ilova sifatida o'rnatish</h3>
+      <ol>
+        <li>Pastdagi <strong>Ulashish</strong> tugmasini bosing <span class="ios-share-ico">⬆️</span></li>
+        <li>Ro'yxatdan <strong>"Bosh ekranga qo'shish"</strong> (Add to Home Screen) ni tanlang</li>
+        <li><strong>"Qo'shish"</strong> tugmasini bosing</li>
+      </ol>
+      <button class="btn-primary" id="iosInstallCloseBtn" style="width:100%;">Tushunarli</button>
+    </div>`;
+  document.body.appendChild(modal);
+  document.getElementById('iosInstallCloseBtn').addEventListener('click', () => {
+    modal.hidden = true;
   });
 }
 
