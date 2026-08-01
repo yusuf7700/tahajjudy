@@ -16,17 +16,18 @@
 // ====================================================================
 
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-  
-  // Global obyekt sifatida ishlatiladi (window.*), chunki file:// protokolida
-  // ES modullar ishlamaydi. Barcha sahifalar shu faylni <script> orqali chaqiradi.
-  firebase.initializeApp(firebaseConfig);
-  
-  const auth = firebase.auth();
-  const db = firebase.firestore();
+  apiKey: "AIzaSyCLmPCwusdLyQBiY_aKhhdKS-w0nq9muLc",
+  authDomain: "tahajjudy.firebaseapp.com",
+  projectId: "tahajjudy",
+  storageBucket: "tahajjudy.firebasestorage.app",
+  messagingSenderId: "60848413032",
+  appId: "1:60848413032:web:19fd2d23a278d21bfbdedd",
+  measurementId: "G-NLT9NSLSB4"
+};
+
+// Global obyekt sifatida ishlatiladi (window.*), chunki file:// protokolida
+// ES modullar ishlamaydi. Barcha sahifalar shu faylni <script> orqali chaqiradi.
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
