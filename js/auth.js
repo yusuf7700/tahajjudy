@@ -1,9 +1,12 @@
 // ===== TahajjudY — autentifikatsiya =====
-// Eslatma: Google kirish uchun har doim "redirect" oqimi ishlatiladi
-// (popup emas). Popup usuli Vercel kabi hostinglarda brauzerning
-// xavfsizlik siyosati (Cross-Origin-Opener-Policy) tufayli ba'zan
-// muvaffaqiyatsiz tugab, foydalanuvchini yana login sahifasiga
-// qaytarib yuborar edi — redirect bunday muammoni butunlay oldini oladi.
+// Eslatma: kompyuterda POPUP, mobil qurilmalarda esa REDIRECT ishlatiladi.
+// Bu — oldingi loyihalarda (PlannerY va h.k.) sinovdan o'tgan, ishonchli usul.
+// Faqat "redirect"ni hamma joyda ishlatish administrator sozlamalariga qarab
+// muammo chiqarishi mumkin, shu sabab bu yerda ikkalasi ham qo'llab-quvvatlanadi.
+
+function isMobileDevice() {
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
 
 function isLoginPage() {
   const path = window.location.pathname;
@@ -12,12 +15,29 @@ function isLoginPage() {
 
 async function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
-  setAuthStatus('Google sahifasiga yo\u2018naltirilmoqda...');
+  setAuthStatus('Kirilmoqda...');
+
   try {
-    await auth.signInWithRedirect(provider);
+    if (isMobileDevice()) {
+      await auth.signInWithRedirect(provider);
+    } else {
+      const result = await auth.signInWithPopup(provider);
+      if (result && result.user) {
+        window.location.href = 'dashboard.html';
+      }
+    }
   } catch (err) {
     console.error('Google kirish xatosi:', err);
-    setAuthStatus("Kirishda xatolik yuz berdi. Qaytadan urinib ko'ring.");
+    // Popup bloklangan yoki xato bo'lsa — redirect'ga o'tamiz (zaxira yo'l)
+    if (err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
+      try {
+        await auth.signInWithRedirect(provider);
+        return;
+      } catch (err2) {
+        console.error('Redirect xatosi:', err2);
+      }
+    }
+    setAuthStatus("Kirishda xatolik: " + (err.code || "noma'lum xato"));
   }
 }
 
@@ -51,28 +71,19 @@ function setAuthStatus(text) {
   if (el) el.textContent = text;
 }
 
-// Google redirect'dan qaytgandan keyin natijani tekshirish.
-// Bu promise onAuthStateChanged'dan OLDIN yozilishi kerak, aks holda
-// ba'zan race-condition tufayli foydalanuvchi login sahifasida qolib ketadi.
-let redirectHandled = false;
-
+// Mobil'da redirect orqali qaytgandan keyin natijani tekshirish
 auth.getRedirectResult().then((result) => {
-  redirectHandled = true;
   if (result && result.user) {
     window.location.href = 'dashboard.html';
   }
 }).catch((err) => {
-  redirectHandled = true;
   console.error('Redirect natijasi xatosi:', err);
   if (err && err.code) {
     setAuthStatus("Kirishda xatolik: " + err.code);
   }
 });
 
-// Agar foydalanuvchi allaqachon kirgan bo'lsa, to'g'ridan-to'g'ri dashboard'ga.
-// redirectHandled tekshiruvi shu yerda kerak emas — onAuthStateChanged
-// getRedirectResult tugaganidan keyin ham to'g'ri ishlaydi, chunki Firebase
-// SDK ikkalasini ham bir xil auth holatidan oladi.
+// Agar foydalanuvchi allaqachon kirgan bo'lsa, to'g'ridan-to'g'ri dashboard'ga
 auth.onAuthStateChanged((user) => {
   if (user && isLoginPage()) {
     window.location.href = 'dashboard.html';
