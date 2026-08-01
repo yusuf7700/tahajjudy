@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kirish — TahajjudY</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="auth-body">
+
+<div class="stars" id="starsAuth"></div>
+
+<div class="auth-card">
+  <div class="brand" style="justify-content:center;margin-bottom:28px;">
+    <img src="assets/logo.png" alt="TahajjudY logotipi" style="width:44px;height:44px;">
+    <span style="font-size:1.4rem;">Tahajjud<em>Y</em></span>
+  </div>
+
+  <h1 class="auth-title">Kechangizni boshlang</h1>
+  <p class="auth-sub">Ma'lumotlaringiz saqlanishi va barcha qurilmalarda ko'rinishi uchun kiring.</p>
+
+  <button id="googleSignInBtn" class="auth-btn auth-btn-google">
+    <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35 24 35c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.4-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 7.1 29.6 5 24 5c-7.7 0-14.4 4.4-17.7 10.7z"/><path fill="#4CAF50" d="M24 43c5.4 0 10.4-2.1 14.1-5.5l-6.5-5.5c-2 1.5-4.6 2.5-7.6 2.5-5.3 0-9.7-3.6-11.3-8.4l-6.6 5.1C9.5 38.5 16.2 43 24 43z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.8l6.5 5.5C40.4 36.5 43 30.8 43 24c0-1.4-.1-2.7-.4-3.5z"/></svg>
+    Google orqali kirish
+  </button>
+
+  <button id="guestSignInBtn" class="auth-btn auth-btn-guest">
+    Mehmon sifatida davom etish
+  </button>
+
+  <p class="auth-status" id="authStatus"></p>
+  <p class="auth-note">Mehmon rejimida ma'lumotlar faqat shu qurilmada saqlanadi.</p>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  (function scatter(){
+    const el = document.getElementById('starsAuth');
+    for(let i=0;i<35;i++){
+      const s = document.createElement('div');
+      s.className='star';
+      s.style.left = Math.random()*100+'%';
+      s.style.top = Math.random()*100+'%';
+      s.style.animationDelay = (Math.random()*4)+'s';
+      el.appendChild(s);
+    }
+  })();
+</script>
+</body>
+</html>

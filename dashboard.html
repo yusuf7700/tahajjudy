@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — TahajjudY</title>
+<meta name="theme-color" content="#0C2419">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand">
+      <img src="assets/logo.png" alt="TahajjudY logotipi">
+      <span>Tahajjud<em>Y</em></span>
+    </div>
+    <div class="nav-actions">
+      <button id="installBtn" class="cta-btn install-btn" hidden>📲 O'rnatish</button>
+      <button id="signOutBtn" class="cta-btn ghost-btn">Chiqish</button>
+    </div>
+  </div>
+</header>
+
+<section class="section dash-hero">
+  <div class="wrap">
+    <p class="dash-date" id="todayDate">—</p>
+    <h1 class="dash-title">Assalomu alaykum, <span id="greetingName">do'st</span></h1>
+
+    <!-- Tahajjud vaqti — asosiy karta -->
+    <div class="tahajjud-hero-card">
+      <div class="tahajjud-hero-left">
+        <span class="tahajjud-label">🌙 Bugungi tahajjud vaqti</span>
+        <div class="tahajjud-time" id="tahajjudTime">Hisoblanmoqda...</div>
+        <p class="tahajjud-note" id="tahajjudNote">Joylashuvingiz asosida hisoblanmoqda...</p>
+      </div>
+      <div class="tahajjud-hero-right">
+        <div class="time-setting">
+          <label for="sleepReminderTime">⏰ Uxlash eslatmasi</label>
+          <input type="time" id="sleepReminderTime">
+        </div>
+        <div class="time-setting">
+          <label for="alarmTime">⏰ Budilnik</label>
+          <input type="time" id="alarmTime">
+        </div>
+        <p class="reminder-hint">Eslatmalar ilova ochiq turganda ishlaydi.</p>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      <!-- Chap: bugungi vazifalar -->
+      <div class="dash-col">
+        <div class="card-block">
+          <h3>📝 Ertangi reja</h3>
+          <textarea id="planField" class="plan-field" rows="3" placeholder="Ertangi kun uchun 1-3 band yozing..."></textarea>
+        </div>
+
+        <div class="card-block">
+          <h3>Bugungi belgilar</h3>
+          <div class="toggle-list">
+            <button class="toggle-btn" data-field="intention">
+              <span class="toggle-ico">🙏</span>
+              <span class="toggle-text">Tahajjud uchun niyat qildim</span>
+              <span class="toggle-check">✓</span>
+            </button>
+            <button class="toggle-btn" data-field="water">
+              <span class="toggle-ico">💧</span>
+              <span class="toggle-text">Suv ichdim</span>
+              <span class="toggle-check">✓</span>
+            </button>
+            <button class="toggle-btn" data-field="prayer">
+              <span class="toggle-ico">📿</span>
+              <span class="toggle-text">Namoz o'qidim</span>
+              <span class="toggle-check">✓</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- O'ng: streak va statistika -->
+      <div class="dash-col">
+        <div class="streak-card">
+          <div class="flame">🔥</div>
+          <div class="streak-num" id="streakNum">0</div>
+          <div class="streak-label">ketma-ket kun tahajjudda</div>
+          <div class="streak-sub">Eng uzun: <strong id="longestStreakNum">0</strong> kun</div>
+          <div class="freeze-note">1 kun o'tkazib yuborsangiz ham streak buzilmaydi — haftada bitta "kechirim kuni" bor.</div>
+        </div>
+
+        <div class="week-card">
+          <h3>Bu haftaning ritmi</h3>
+          <div class="bars" id="barsContainer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

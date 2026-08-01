@@ -1,0 +1,96 @@
+{
+    "site": {
+      "name": "TahajjudY",
+      "tagline": "Tunning yarmida uyg'onish — endi osonroq",
+      "lead": "Uxlashdan tahajjudgacha, niyatdan namozgacha — kechangizni birma-bir kuzatib boradigan, sizni har kuni bir qadam yaqinroq qiladigan hamroh."
+    },
+    "steps": [
+      {
+        "num": 1,
+        "icon": "📝",
+        "time": "Kechqurun",
+        "title": "Ertangi reja",
+        "text": "Yotishdan oldin ertangi kunga bir nechta band yozib qo'yasiz — miya tinchlanadi, uyqu yengil keladi."
+      },
+      {
+        "num": 2,
+        "icon": "⏰",
+        "time": "22:30 atrofida",
+        "title": "Uxlash eslatmasi",
+        "text": "Vaqtida yotishingiz uchun yumshoq eslatma — tunning yarmida turish osonroq kechishi uchun."
+      },
+      {
+        "num": 3,
+        "icon": "🌙",
+        "time": "Kechaning uchdan biri",
+        "title": "Tahajjud vaqti",
+        "text": "Joylashuvingiz asosida aniq hisoblab beriladi — har kuni, har shahar uchun to'g'ri vaqt."
+      },
+      {
+        "num": 4,
+        "icon": "⏰",
+        "time": "Belgilangan soatda",
+        "title": "Budilnik",
+        "text": "Xotirjam ovoz bilan uyg'otadi — atrofdagilarni bezovta qilmasdan."
+      },
+      {
+        "num": 5,
+        "icon": "🙏",
+        "time": "Uyg'ongach",
+        "title": "Niyat qildim",
+        "text": "Bitta bosim bilan \"Tahajjud uchun niyat qildim\" — kichik, lekin kuchli qadam."
+      },
+      {
+        "num": 6,
+        "icon": "💧",
+        "time": "Tahoratdan oldin",
+        "title": "Suv ichdim",
+        "text": "Tanangizni uyg'otish uchun oddiy, lekin unutilib ketadigan odat."
+      },
+      {
+        "num": 7,
+        "icon": "📿",
+        "time": "Tunning yuragi",
+        "title": "Namoz o'qidim",
+        "text": "Rakatlaringizni belgilaysiz — kun tugagach, natija ko'z oldingizda."
+      },
+      {
+        "num": 8,
+        "icon": "🔥",
+        "time": "Har kuni",
+        "title": "Streak",
+        "text": "Ketma-ket necha kun turganingiz saqlanib boradi — bitta kechikish hammasini bekor qilmaydi."
+      },
+      {
+        "num": 9,
+        "icon": "📊",
+        "time": "Hafta yakunida",
+        "title": "Haftalik statistika",
+        "text": "Qaysi kunlari kuchli, qaysilarida qiyin bo'lganingizni ko'rasiz — o'z ritmingizni topasiz."
+      }
+    ],
+    "features": [
+      { "icon": "🌙", "title": "Tahajjud vaqti", "text": "Joylashuvga qarab aniq hisoblanadi." },
+      { "icon": "⏰", "title": "Uxlash eslatmasi", "text": "Vaqtida yotishga yumshoq turtki." },
+      { "icon": "📝", "title": "Ertangi reja", "text": "Yotishdan oldin ertangi kunni belgilash." },
+      { "icon": "🙏", "title": "Niyat qildim", "text": "Uyg'onganda bitta bosim — niyat qayd etiladi." },
+      { "icon": "⏰", "title": "Budilnik", "text": "Xotirjam ovozli, ishonchli uyg'otish." },
+      { "icon": "💧", "title": "Suv ichdim", "text": "Turgandan keyingi kichik, foydali odat." },
+      { "icon": "📿", "title": "Namoz o'qidim", "text": "Rakatlarni belgilab, kunni yakunlash." },
+      { "icon": "🔥", "title": "Streak", "text": "Ketma-ket kunlaringiz saqlanadi." },
+      { "icon": "📊", "title": "Haftalik statistika", "text": "O'z ritmingizni raqamlarda ko'rish." }
+    ],
+    "weeklyStats": {
+      "streakCount": 12,
+      "freezeNote": "1 kun o'tkazib yuborsangiz ham streak buzilmaydi — haftada bitta \"kechirim kuni\" bor.",
+      "days": [
+        { "label": "Du", "value": 40 },
+        { "label": "Se", "value": 70 },
+        { "label": "Cho", "value": 55 },
+        { "label": "Pa", "value": 90 },
+        { "label": "Ju", "value": 65 },
+        { "label": "Sha", "value": 100 },
+        { "label": "Ya", "value": 80, "today": true }
+      ]
+    }
+  }
