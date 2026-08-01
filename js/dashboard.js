@@ -29,7 +29,6 @@ function pad2(n) { return String(n).padStart(2, '0'); }
 
 let currentUser = null;
 const TODAY = todayISO();
-let scheduledTimers = [];
 
 function requireAuth() {
   auth.onAuthStateChanged((user) => {
@@ -44,20 +43,17 @@ function requireAuth() {
 
 async function initDashboard(user) {
   document.getElementById('todayDate').textContent = formatUzDate(TODAY);
-  document.getElementById('greetingName').textContent = user.displayName || 'do\u2019st';
+  document.getElementById('greetingName').textContent = user.displayName || "do'st";
 
   wireChecklistButtons();
-  wirePlanField();
+  wirePlanControls();
   wireSignOut();
-  wireSettingsFields();
   wireInstallPrompt('installBtn');
   registerServiceWorker();
 
   await loadTodayEntry();
   await loadUserStreak();
   await loadWeeklyStats();
-  await loadSettings();
-  await loadTahajjudTime();
 }
 
 function formatUzDate(dateStr) {
@@ -84,7 +80,7 @@ async function loadTodayEntry() {
   setToggleState('intention', !!data.intention);
   setToggleState('water', !!data.water);
   setToggleState('prayer', !!data.prayer);
-  document.getElementById('planField').value = data.plan || '';
+  renderPlan(data.plan || '');
 }
 
 function setToggleState(field, isOn) {
@@ -114,14 +110,61 @@ function wireChecklistButtons() {
   });
 }
 
-function wirePlanField() {
-  const field = document.getElementById('planField');
-  let debounceTimer;
-  field.addEventListener('input', () => {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(async () => {
-      await entryRef(TODAY).set({ plan: field.value }, { merge: true });
-    }, 600);
+// ===== Ertangi reja: ko'rish / tahrirlash / o'chirish =====
+
+function renderPlan(planText) {
+  const viewMode = document.getElementById('planViewMode');
+  const editMode = document.getElementById('planEditMode');
+  const textEl = document.getElementById('planText');
+  const fieldEl = document.getElementById('planField');
+  const cancelBtn = document.getElementById('planCancelBtn');
+
+  if (planText) {
+    textEl.textContent = planText;
+    viewMode.hidden = false;
+    editMode.hidden = true;
+  } else {
+    fieldEl.value = '';
+    viewMode.hidden = true;
+    editMode.hidden = false;
+    cancelBtn.hidden = true;
+  }
+}
+
+function wirePlanControls() {
+  const fieldEl = document.getElementById('planField');
+  const saveBtn = document.getElementById('planSaveBtn');
+  const cancelBtn = document.getElementById('planCancelBtn');
+  const editBtn = document.getElementById('planEditBtn');
+  const deleteBtn = document.getElementById('planDeleteBtn');
+  const viewMode = document.getElementById('planViewMode');
+  const editMode = document.getElementById('planEditMode');
+
+  saveBtn.addEventListener('click', async () => {
+    const value = fieldEl.value.trim();
+    if (!value) return;
+    await entryRef(TODAY).set({ plan: value }, { merge: true });
+    renderPlan(value);
+  });
+
+  editBtn.addEventListener('click', () => {
+    fieldEl.value = document.getElementById('planText').textContent;
+    viewMode.hidden = true;
+    editMode.hidden = false;
+    cancelBtn.hidden = false;
+  });
+
+  cancelBtn.addEventListener('click', () => {
+    const existingText = document.getElementById('planText').textContent;
+    viewMode.hidden = false;
+    editMode.hidden = true;
+    fieldEl.value = existingText;
+  });
+
+  deleteBtn.addEventListener('click', async () => {
+    if (!confirm("Ertangi rejani o'chirmoqchimisiz?")) return;
+    await entryRef(TODAY).set({ plan: '' }, { merge: true });
+    renderPlan('');
   });
 }
 
@@ -192,144 +235,6 @@ async function loadWeeklyStats() {
       </div>`;
   }).join('');
 }
-
-// ===== Sozlamalar: uxlash eslatmasi va budilnik =====
-
-async function loadSettings() {
-  const snap = await userRef().get();
-  const settings = (snap.exists && snap.data().settings) || {};
-  document.getElementById('sleepReminderTime').value = settings.sleepReminderTime || '22:30';
-  document.getElementById('alarmTime').value = settings.alarmTime || '02:30';
-  scheduleReminders(settings.sleepReminderTime || '22:30', settings.alarmTime || '02:30');
-}
-
-function wireSettingsFields() {
-  const sleepField = document.getElementById('sleepReminderTime');
-  const alarmField = document.getElementById('alarmTime');
-
-  async function saveSettings() {
-    const sleepVal = sleepField.value;
-    const alarmVal = alarmField.value;
-    await userRef().set({
-      settings: { sleepReminderTime: sleepVal, alarmTime: alarmVal }
-    }, { merge: true });
-    scheduleReminders(sleepVal, alarmVal);
-  }
-
-  sleepField.addEventListener('change', saveSettings);
-  alarmField.addEventListener('change', saveSettings);
-}
-
-function scheduleReminders(sleepTimeStr, alarmTimeStr) {
-  scheduledTimers.forEach(t => clearTimeout(t));
-  scheduledTimers = [];
-
-  if (Notification && Notification.permission === 'default') {
-    Notification.requestPermission();
-  }
-
-  scheduledTimers.push(scheduleAt(sleepTimeStr, () => {
-    notifyOrAlert('🌙 Uxlash vaqti', 'Ertaga tahajjudga turish uchun hozir yotish payti keldi.');
-  }));
-
-  scheduledTimers.push(scheduleAt(alarmTimeStr, () => {
-    notifyOrAlert('⏰ Budilnik', "Tahajjud vaqti keldi — uyg'onish payti!");
-    playAlarmSound();
-  }));
-}
-
-function scheduleAt(timeStr, callback) {
-  const [h, m] = timeStr.split(':').map(Number);
-  const now = new Date();
-  const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
-  if (target <= now) target.setDate(target.getDate() + 1);
-  const delay = target - now;
-  return setTimeout(callback, delay);
-}
-
-function notifyOrAlert(title, body) {
-  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-    new Notification(title, { body, icon: 'icons/icon-192.png' });
-  } else {
-    console.log(`${title}: ${body}`);
-  }
-}
-
-function playAlarmSound() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = 660;
-    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 1.2);
-  } catch (err) {
-    console.error('Ovoz ijro etishda xatolik:', err);
-  }
-}
-
-// Eslatma: bu eslatmalar faqat ilova/tab ochiq turganda ishlaydi.
-// Yopiq holatda ham ishlashi uchun Firebase Cloud Messaging (FCM)
-// orqali push-bildirishnoma qo'shish keyingi bosqichda amalga oshiriladi.
-
-// ===== Tahajjud vaqti (Aladhan API) =====
-
-async function loadTahajjudTime() {
-  const el = document.getElementById('tahajjudTime');
-  const noteEl = document.getElementById('tahajjudNote');
-  el.textContent = 'Hisoblanmoqda...';
-
-  if (!navigator.geolocation) {
-    el.textContent = '—';
-    noteEl.textContent = 'Brauzeringiz joylashuvni aniqlay olmadi.';
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(async (pos) => {
-    try {
-      const { latitude, longitude } = pos.coords;
-      const today = new Date();
-      const tomorrow = new Date(today);
-      tomorrow.setDate(today.getDate() + 1);
-
-      const fmt = (d) => `${pad2(d.getDate())}-${pad2(d.getMonth() + 1)}-${d.getFullYear()}`;
-
-      const [todayRes, tomorrowRes] = await Promise.all([
-        fetch(`https://api.aladhan.com/v1/timings/${fmt(today)}?latitude=${latitude}&longitude=${longitude}&method=3`).then(r => r.json()),
-        fetch(`https://api.aladhan.com/v1/timings/${fmt(tomorrow)}?latitude=${latitude}&longitude=${longitude}&method=3`).then(r => r.json())
-      ]);
-
-      const maghrib = parseTimeToday(todayRes.data.timings.Maghrib, today);
-      const fajrTomorrow = parseTimeToday(tomorrowRes.data.timings.Fajr, tomorrow);
-
-      const nightMs = fajrTomorrow - maghrib;
-      const lastThirdStart = new Date(fajrTomorrow.getTime() - nightMs / 3);
-
-      el.textContent = `${pad2(lastThirdStart.getHours())}:${pad2(lastThirdStart.getMinutes())}`;
-      noteEl.textContent = `Kechaning oxirgi uchdan biri — ${pad2(fajrTomorrow.getHours())}:${pad2(fajrTomorrow.getMinutes())} bomdod namozigacha.`;
-    } catch (err) {
-      console.error('Tahajjud vaqtini hisoblashda xatolik:', err);
-      el.textContent = '—';
-      noteEl.textContent = 'Vaqtni hisoblashda xatolik yuz berdi. Internetni tekshiring.';
-    }
-  }, (err) => {
-    console.error('Joylashuv xatosi:', err);
-    el.textContent = '—';
-    noteEl.textContent = "Aniq vaqt uchun joylashuvga ruxsat bering.";
-  });
-}
-
-function parseTimeToday(timeStr, baseDate) {
-  const [h, m] = timeStr.split(' ')[0].split(':').map(Number);
-  return new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), h, m, 0);
-}
-
-// ===== PWA: o'rnatish va sw ro'yxatdan o'tkazish endi js/pwa.js'da =====
-// (wireInstallPrompt va registerServiceWorker funksiyalari shu yerdan chaqiriladi)
 
 function wireSignOut() {
   const btn = document.getElementById('signOutBtn');
