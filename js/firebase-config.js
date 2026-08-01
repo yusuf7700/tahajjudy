@@ -31,3 +31,10 @@ firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
 const db = firebase.firestore();
+
+// Sessiya doim saqlansin (brauzer yopilsa ham) — ba'zi hollarda
+// standart sozlama sessiyani saqlamay, Google kirishdan keyin
+// foydalanuvchini qayta login sahifasiga qaytarib yuborishi mumkin edi.
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch((err) => {
+  console.error('Persistence sozlashda xatolik:', err);
+});
