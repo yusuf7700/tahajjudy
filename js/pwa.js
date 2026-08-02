@@ -49,36 +49,62 @@ function wireInstallPrompt(buttonId) {
   if (!installBtn) return;
 
   if (isStandalone()) {
-    installBtn.hidden = true;
+    installBtn.textContent = "✓ O'rnatilgan";
+    installBtn.disabled = true;
     return;
   }
 
   if (isIOS()) {
-    // Safari beforeinstallprompt'ni qo'llab-quvvatlamaydi — qo'lda ko'rsatma beramiz
-    installBtn.hidden = false;
     installBtn.addEventListener('click', () => showIOSInstallModal());
     return;
   }
 
+  // Tugma har doim ko'rinadi — beforeinstallprompt hali kelmagan bo'lsa ham,
+  // bosilganda foydalanuvchiga qo'lda o'rnatish yo'lini ko'rsatamiz.
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredInstallPrompt = e;
-    installBtn.hidden = false;
   });
 
   installBtn.addEventListener('click', async () => {
-    if (!deferredInstallPrompt) {
-      alert("Ilova allaqachon o'rnatilgan yoki brauzeringiz o'rnatishni qo'llab-quvvatlamaydi.");
-      return;
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      const choice = await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      if (choice.outcome === 'accepted') {
+        installBtn.textContent = "✓ O'rnatilgan";
+        installBtn.disabled = true;
+      }
+    } else {
+      showManualInstallModal();
     }
-    deferredInstallPrompt.prompt();
-    await deferredInstallPrompt.userChoice;
-    deferredInstallPrompt = null;
-    installBtn.hidden = true;
   });
 
   window.addEventListener('appinstalled', () => {
-    installBtn.hidden = true;
+    installBtn.textContent = "✓ O'rnatilgan";
+    installBtn.disabled = true;
+  });
+}
+
+function showManualInstallModal() {
+  let modal = document.getElementById('manualInstallModal');
+  if (modal) { modal.hidden = false; return; }
+
+  modal = document.createElement('div');
+  modal.id = 'manualInstallModal';
+  modal.className = 'ios-install-overlay';
+  modal.innerHTML = `
+    <div class="ios-install-card">
+      <h3>📲 Ilova sifatida o'rnatish</h3>
+      <ol>
+        <li>Manzil satrining o'ng tomonidagi <strong>⊕</strong> yoki brauzer menyusi (<strong>⋮</strong>) ni bosing</li>
+        <li><strong>"Ilova sifatida o'rnatish"</strong> yoki <strong>"Install app"</strong>ni tanlang</li>
+      </ol>
+      <button class="btn-primary" id="manualInstallCloseBtn" style="width:100%;">Tushunarli</button>
+    </div>`;
+  document.body.appendChild(modal);
+  document.getElementById('manualInstallCloseBtn').addEventListener('click', () => {
+    modal.hidden = true;
   });
 }
 
