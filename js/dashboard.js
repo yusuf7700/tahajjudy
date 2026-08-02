@@ -44,6 +44,7 @@ function requireAuth() {
 async function initDashboard(user) {
   document.getElementById('todayDate').textContent = formatUzDate(TODAY);
   document.getElementById('greetingName').textContent = user.displayName || "do'st";
+  renderHijriDate();
 
   wireChecklistButtons();
   wirePlanControls();
@@ -51,9 +52,11 @@ async function initDashboard(user) {
   wireInstallPrompt('installBtn');
   registerServiceWorker();
 
-  await loadTodayEntry();
-  await loadUserStreak();
-  await loadWeeklyStats();
+  await Promise.all([
+    loadTodayEntry(),
+    loadUserStreak(),
+    loadWeeklyStats()
+  ]);
 }
 
 function formatUzDate(dateStr) {
@@ -61,6 +64,39 @@ function formatUzDate(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number);
   const dt = new Date(y, m - 1, d);
   return `${d}.${pad2(m)}.${y} — ${days[dt.getDay()]}`;
+}
+
+// ===== Bugungi Hijriy sana =====
+// Brauzerning o'zidagi Intl API orqali hisoblanadi — internet yoki
+// tashqi API kerak emas, shuning uchun darhol va ishonchli ishlaydi.
+
+const HIJRI_MONTHS = [
+  'Muharram', 'Safar', "Rabi' ul-avval", "Rabi' us-soniy",
+  'Jumod ul-avval', 'Jumod us-soniy', 'Rajab', "Sha'bon",
+  'Ramazon', 'Shavvol', "Zul-qa'da", 'Zul-hijja'
+];
+
+function renderHijriDate() {
+  const el = document.getElementById('hijriDate');
+  const noteEl = document.getElementById('hijriGregorianNote');
+  if (!el) return;
+
+  try {
+    const fmt = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
+      day: 'numeric', month: 'numeric', year: 'numeric'
+    });
+    const parts = fmt.formatToParts(new Date());
+    const day = parts.find(p => p.type === 'day').value;
+    const monthNum = parseInt(parts.find(p => p.type === 'month').value, 10);
+    const year = parts.find(p => p.type === 'year').value;
+
+    el.textContent = `${day} ${HIJRI_MONTHS[monthNum - 1]} ${year}`;
+    noteEl.textContent = `Milodiy: ${formatUzDate(TODAY)}`;
+  } catch (err) {
+    console.error('Hijriy sanani hisoblashda xatolik:', err);
+    el.textContent = '—';
+    noteEl.textContent = "Hijriy sanani ko'rsatishda xatolik yuz berdi.";
+  }
 }
 
 function entryRef(dateStr) {
@@ -92,19 +128,21 @@ function setToggleState(field, isOn) {
 
 function wireChecklistButtons() {
   document.querySelectorAll('.toggle-btn[data-field]').forEach((btn) => {
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', () => {
       const field = btn.dataset.field;
       const nowOn = !btn.classList.contains('is-active');
-      setToggleState(field, nowOn);
+      setToggleState(field, nowOn); // darhol, kutmasdan
 
-      await entryRef(TODAY).set({
+      // Firestore'ga yozish fonda ketadi — interfeys bloklanmaydi
+      entryRef(TODAY).set({
         [field]: nowOn,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
+      }, { merge: true }).catch((err) => console.error('Saqlashda xatolik:', err));
 
       if (field === 'prayer') {
-        await updateStreak(nowOn);
-        await loadWeeklyStats();
+        updateStreak(nowOn).then(loadWeeklyStats);
+      } else {
+        loadWeeklyStats();
       }
     });
   });
@@ -140,11 +178,12 @@ function wirePlanControls() {
   const viewMode = document.getElementById('planViewMode');
   const editMode = document.getElementById('planEditMode');
 
-  saveBtn.addEventListener('click', async () => {
+  saveBtn.addEventListener('click', () => {
     const value = fieldEl.value.trim();
     if (!value) return;
-    await entryRef(TODAY).set({ plan: value }, { merge: true });
-    renderPlan(value);
+    renderPlan(value); // darhol ko'rsatiladi
+    entryRef(TODAY).set({ plan: value }, { merge: true })
+      .catch((err) => console.error('Reja saqlashda xatolik:', err));
   });
 
   editBtn.addEventListener('click', () => {
@@ -161,10 +200,11 @@ function wirePlanControls() {
     fieldEl.value = existingText;
   });
 
-  deleteBtn.addEventListener('click', async () => {
+  deleteBtn.addEventListener('click', () => {
     if (!confirm("Ertangi rejani o'chirmoqchimisiz?")) return;
-    await entryRef(TODAY).set({ plan: '' }, { merge: true });
     renderPlan('');
+    entryRef(TODAY).set({ plan: '' }, { merge: true })
+      .catch((err) => console.error("Reja o'chirishda xatolik:", err));
   });
 }
 
@@ -220,14 +260,22 @@ async function loadWeeklyStats() {
   const dates = [];
   for (let i = 6; i >= 0; i--) dates.push(addDays(TODAY, -i));
 
-  const results = await Promise.all(dates.map(d => entryRef(d).get()));
+  // 7 ta alohida so'rov o'rniga BITTA so'rov — tezroq yuklanadi
+  const snap = await db.collection('users').doc(currentUser.uid)
+    .collection('entries')
+    .where(firebase.firestore.FieldPath.documentId(), 'in', dates)
+    .get();
+
+  const dataByDate = {};
+  snap.forEach((doc) => { dataByDate[doc.id] = doc.data(); });
+
   const bars = document.getElementById('barsContainer');
-  bars.innerHTML = results.map((snap, i) => {
-    const data = snap.exists ? snap.data() : {};
+  bars.innerHTML = dates.map((d) => {
+    const data = dataByDate[d] || {};
     const done = [data.intention, data.water, data.prayer].filter(Boolean).length;
     const pct = Math.round((done / 3) * 100);
-    const isToday = dates[i] === TODAY;
-    const dow = new Date(dates[i]).getDay();
+    const isToday = d === TODAY;
+    const dow = new Date(d).getDay();
     return `
       <div class="bar-col${isToday ? ' today' : ''}">
         <div class="bar" style="height:${Math.max(pct, 4)}%"></div>
