@@ -26,8 +26,27 @@ async function initSettings(user) {
   wireNameSave(user);
   wireSignOut();
   wireClearCache();
+  wireDonateCopy();
   wireInstallPrompt('installBtn');
   registerServiceWorker();
+}
+
+function wireDonateCopy() {
+  const card = document.getElementById('donateCard');
+  const status = document.getElementById('donateStatus');
+  if (!card) return;
+
+  card.addEventListener('click', async () => {
+    const raw = document.getElementById('donateNumber').textContent.replace(/\s/g, '');
+    try {
+      await navigator.clipboard.writeText(raw);
+      status.textContent = 'Nusxalandi ✓';
+    } catch (err) {
+      console.error('Nusxalashda xatolik:', err);
+      status.textContent = "Nusxalab bo'lmadi, qo'lda yozib oling.";
+    }
+    setTimeout(() => { status.textContent = ''; }, 2000);
+  });
 }
 
 function updateAccountUI(user) {
