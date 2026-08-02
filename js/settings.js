@@ -3,8 +3,9 @@
 // Redirect orqali "Google bilan bog'lash" natijasini tekshirish
 auth.getRedirectResult().then((result) => {
   if (result && result.user && !result.user.isAnonymous) {
-    // Bog'lash muvaffaqiyatli — sahifa auth holatini yangilash uchun qayta yuklanadi
-    window.location.reload();
+    updateAccountUI(result.user);
+    const status = document.getElementById('linkStatus');
+    if (status) status.textContent = "Bog'landi ✓";
   }
 }).catch((err) => {
   console.error("Bog'lash natijasi xatosi:", err);
@@ -20,13 +21,7 @@ auth.onAuthStateChanged((user) => {
 
 async function initSettings(user) {
   document.getElementById('nameField').value = user.displayName || '';
-  document.getElementById('accountTypeBadge').textContent = user.isAnonymous ? 'Ism bilan' : 'Google';
-
-  const linkRow = document.getElementById('linkGoogleRow');
-  if (user.isAnonymous) {
-    linkRow.hidden = false;
-    wireGoogleLink(user);
-  }
+  updateAccountUI(user);
 
   wireNameSave(user);
   wireSignOut();
@@ -35,26 +30,54 @@ async function initSettings(user) {
   registerServiceWorker();
 }
 
+function updateAccountUI(user) {
+  const badge = document.getElementById('accountTypeBadge');
+  const linkRow = document.getElementById('linkGoogleRow');
+  const linkBtn = document.getElementById('linkGoogleBtn');
+
+  if (user.isAnonymous) {
+    badge.textContent = 'Ism bilan';
+    linkRow.hidden = false;
+    linkBtn.textContent = "Bog'lash";
+    linkBtn.disabled = false;
+    wireGoogleLink(user);
+  } else {
+    badge.textContent = 'Google';
+    // Bog'langanini doimiy ko'rsatib turamiz (yashirmaymiz)
+    linkRow.hidden = false;
+    linkBtn.textContent = "✓ Bog'langan";
+    linkBtn.disabled = true;
+  }
+}
+
 function isMobileDevice() {
   return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
+let googleLinkWired = false;
+
 function wireGoogleLink(user) {
+  if (googleLinkWired) return;
+  googleLinkWired = true;
+
   const btn = document.getElementById('linkGoogleBtn');
   const status = document.getElementById('linkStatus');
 
   btn.addEventListener('click', async () => {
     const provider = new firebase.auth.GoogleAuthProvider();
     status.textContent = "Bog'lanmoqda...";
+    btn.disabled = true;
     try {
       if (isMobileDevice()) {
         await user.linkWithRedirect(provider);
       } else {
-        await user.linkWithPopup(provider);
-        window.location.reload();
+        const result = await user.linkWithPopup(provider);
+        status.textContent = "Bog'landi ✓";
+        updateAccountUI(result.user);
       }
     } catch (err) {
       console.error("Google bog'lashda xatolik:", err);
+      btn.disabled = false;
       if (err.code === 'auth/credential-already-in-use') {
         status.textContent = "Bu Google hisobi allaqachon boshqa profilga bog'langan.";
       } else {
