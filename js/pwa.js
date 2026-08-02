@@ -1,105 +1,125 @@
-// ===== TahajjudY — autentifikatsiya =====
-// Eslatma: kompyuterda POPUP, mobil qurilmalarda esa REDIRECT ishlatiladi.
-// Bu — oldingi loyihalarda (PlannerY va h.k.) sinovdan o'tgan, ishonchli usul.
-// Faqat "redirect"ni hamma joyda ishlatish administrator sozlamalariga qarab
-// muammo chiqarishi mumkin, shu sabab bu yerda ikkalasi ham qo'llab-quvvatlanadi.
+// ===== TahajjudY — umumiy PWA va tema funksiyalari =====
+// Bu fayl index.html, dashboard.html va settings.html'da birgalikda ishlatiladi.
 
-function isMobileDevice() {
-  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const THEME_KEY = 'tahajjudy-theme';
+
+function getTheme() {
+  return localStorage.getItem(THEME_KEY) ||
+    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 }
 
-function isLoginPage() {
-  const path = window.location.pathname;
-  return path.endsWith('index.html') || path.endsWith('/') || path === '';
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem(THEME_KEY, theme);
+  document.querySelectorAll('.theme-switch').forEach((el) => {
+    el.checked = theme === 'dark';
+  });
 }
 
-async function signInWithGoogle() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  setAuthStatus('Kirilmoqda...');
+function toggleTheme() {
+  const next = getTheme() === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+}
 
-  try {
-    if (isMobileDevice()) {
-      await auth.signInWithRedirect(provider);
-    } else {
-      const result = await auth.signInWithPopup(provider);
-      if (result && result.user) {
-        window.location.href = 'dashboard.html';
-      }
-    }
-  } catch (err) {
-    console.error('Google kirish xatosi:', err);
-    // Popup bloklangan yoki xato bo'lsa — redirect'ga o'tamiz (zaxira yo'l)
-    if (err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
-      try {
-        await auth.signInWithRedirect(provider);
-        return;
-      } catch (err2) {
-        console.error('Redirect xatosi:', err2);
-      }
-    }
-    setAuthStatus("Kirishda xatolik: " + (err.code || "noma'lum xato"));
+function wireThemeSwitches() {
+  document.querySelectorAll('.theme-switch').forEach((el) => {
+    el.checked = getTheme() === 'dark';
+    el.addEventListener('change', () => applyTheme(el.checked ? 'dark' : 'light'));
+  });
+}
+
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch((err) => console.error('SW xatosi:', err));
   }
 }
 
-async function continueWithName() {
-  const nameField = document.getElementById('guestNameField');
-  const name = (nameField?.value || '').trim();
+let deferredInstallPrompt = null;
 
-  if (!name) {
-    setAuthStatus('Iltimos, ismingizni kiriting.');
-    nameField?.focus();
+function isIOS() {
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
+}
+
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+function wireInstallPrompt(buttonId) {
+  const installBtn = document.getElementById(buttonId);
+  if (!installBtn) return;
+
+  if (isStandalone()) {
+    installBtn.hidden = true;
     return;
   }
 
-  setAuthStatus('Kirilmoqda...');
+  if (isIOS()) {
+    // Safari beforeinstallprompt'ni qo'llab-quvvatlamaydi — qo'lda ko'rsatma beramiz
+    installBtn.hidden = false;
+    installBtn.addEventListener('click', () => showIOSInstallModal());
+    return;
+  }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    installBtn.hidden = false;
+  });
+
+  installBtn.addEventListener('click', async () => {
+    if (!deferredInstallPrompt) {
+      alert("Ilova allaqachon o'rnatilgan yoki brauzeringiz o'rnatishni qo'llab-quvvatlamaydi.");
+      return;
+    }
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    installBtn.hidden = true;
+  });
+
+  window.addEventListener('appinstalled', () => {
+    installBtn.hidden = true;
+  });
+}
+
+function showIOSInstallModal() {
+  let modal = document.getElementById('iosInstallModal');
+  if (modal) { modal.hidden = false; return; }
+
+  modal = document.createElement('div');
+  modal.id = 'iosInstallModal';
+  modal.className = 'ios-install-overlay';
+  modal.innerHTML = `
+    <div class="ios-install-card">
+      <h3>📲 Ilova sifatida o'rnatish</h3>
+      <ol>
+        <li>Pastdagi <strong>Ulashish</strong> tugmasini bosing <span class="ios-share-ico">⬆️</span></li>
+        <li>Ro'yxatdan <strong>"Bosh ekranga qo'shish"</strong> (Add to Home Screen) ni tanlang</li>
+        <li><strong>"Qo'shish"</strong> tugmasini bosing</li>
+      </ol>
+      <button class="btn-primary" id="iosInstallCloseBtn" style="width:100%;">Tushunarli</button>
+    </div>`;
+  document.body.appendChild(modal);
+  document.getElementById('iosInstallCloseBtn').addEventListener('click', () => {
+    modal.hidden = true;
+  });
+}
+
+async function clearAppCache() {
   try {
-    const cred = await auth.signInAnonymously();
-    await cred.user.updateProfile({ displayName: name });
-    await db.collection('users').doc(cred.user.uid).set({
-      name: name,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
-    window.location.href = 'dashboard.html';
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((key) => caches.delete(key)));
+    }
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((reg) => reg.unregister()));
+    }
+    return true;
   } catch (err) {
-    console.error('Anonim kirish xatosi:', err);
-    setAuthStatus("Kirishda xatolik yuz berdi. Qaytadan urinib ko'ring.");
+    console.error('Keshni tozalashda xatolik:', err);
+    return false;
   }
 }
 
-function setAuthStatus(text) {
-  const el = document.getElementById('authStatus');
-  if (el) el.textContent = text;
-}
-
-// Mobil'da redirect orqali qaytgandan keyin natijani tekshirish
-auth.getRedirectResult().then((result) => {
-  if (result && result.user) {
-    window.location.href = 'dashboard.html';
-  }
-}).catch((err) => {
-  console.error('Redirect natijasi xatosi:', err);
-  if (err && err.code) {
-    setAuthStatus("Kirishda xatolik: " + err.code);
-  }
-});
-
-// Agar foydalanuvchi allaqachon kirgan bo'lsa, to'g'ridan-to'g'ri dashboard'ga
-auth.onAuthStateChanged((user) => {
-  if (user && isLoginPage()) {
-    window.location.href = 'dashboard.html';
-  }
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  const googleBtn = document.getElementById('googleSignInBtn');
-  const guestBtn = document.getElementById('guestSignInBtn');
-  const nameField = document.getElementById('guestNameField');
-
-  if (googleBtn) googleBtn.addEventListener('click', signInWithGoogle);
-  if (guestBtn) guestBtn.addEventListener('click', continueWithName);
-  if (nameField) {
-    nameField.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') continueWithName();
-    });
-  }
-});
+document.addEventListener('DOMContentLoaded', wireThemeSwitches);
