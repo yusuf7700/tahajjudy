@@ -36,6 +36,16 @@ function registerServiceWorker() {
 
 let deferredInstallPrompt = null;
 
+// MUHIM: bu tinglovchi skript yuklanishi bilanoq (darhol) ro'yxatdan o'tishi kerak,
+// chunki brauzer "beforeinstallprompt" signalini juda erta yuborishi mumkin —
+// agar buni faqat wireInstallPrompt() ichida (Firebase auth tekshiruvidan keyin)
+// yozsak, signal allaqachon o'tib ketgan bo'lishi mumkin va tugma hech qachon
+// avtomatik o'rnatishni taklif qilmaydi.
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+});
+
 function isIOS() {
   return /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
 }
@@ -58,13 +68,6 @@ function wireInstallPrompt(buttonId) {
     installBtn.addEventListener('click', () => showIOSInstallModal());
     return;
   }
-
-  // Tugma har doim ko'rinadi — beforeinstallprompt hali kelmagan bo'lsa ham,
-  // bosilganda foydalanuvchiga qo'lda o'rnatish yo'lini ko'rsatamiz.
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredInstallPrompt = e;
-  });
 
   installBtn.addEventListener('click', async () => {
     if (deferredInstallPrompt) {
