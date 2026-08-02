@@ -71,15 +71,43 @@
 
     <div class="card-block settings-block">
       <h3>📲 Ilova</h3>
-      <div class="settings-row">
-        <span>📲 Ilova sifatida o'rnatish</span>
-        <button id="installBtn" class="cta-btn install-btn" hidden>📲 O'rnatish</button>
+      <div class="settings-row settings-row-desc">
+        <div>
+          <div class="settings-row-title">Telefon/kompyuterga o'rnatish</div>
+          <div class="settings-row-desc-text">TahajjudY'ni ilova sifatida o'rnating — tezroq ochiladi, bosh ekranda alohida ikonka bo'ladi</div>
+        </div>
+        <button id="installBtn" class="cta-btn install-btn">O'rnatish</button>
       </div>
-      <div class="settings-row">
-        <span>Keshni tozalash</span>
+      <div class="settings-row settings-row-desc">
+        <div>
+          <div class="settings-row-title">Keshni tozalash</div>
+          <div class="settings-row-desc-text">Sayt eski holatda ko'rinsa yoki yangilanish chiqmasa, shuni bosing</div>
+        </div>
         <button id="clearCacheBtn" class="cta-btn ghost-btn">Tozalash</button>
       </div>
       <p class="save-status" id="cacheStatus"></p>
+    </div>
+
+    <div class="card-block settings-block">
+      <h3>💬 Takliflar va fikr-mulohaza uchun</h3>
+      <div class="settings-row">
+        <span>Telegram</span>
+        <a href="https://t.me/yuuvsuf" target="_blank" rel="noopener" class="badge-link">@yuuvsuf</a>
+      </div>
+      <div class="settings-row">
+        <span>Instagram</span>
+        <a href="https://instagram.com/yunusovvyusuf" target="_blank" rel="noopener" class="badge-link">@yunusovvyusuf</a>
+      </div>
+    </div>
+
+    <div class="card-block settings-block">
+      <h3>💚 Loyihani qo'llab-quvvatlash</h3>
+      <p style="font-size:.88rem;color:var(--ink-soft);margin-bottom:16px;">Karta raqamini nusxalab, o'zingizga qulay bo'lgan tarzda bizni qo'llab-quvvatlang!</p>
+      <div class="donate-card" id="donateCard" title="Nusxalash uchun bosing">
+        <div class="donate-number" id="donateNumber">5614 6847 0539 1512</div>
+        <div class="donate-name">Yunusov Yusuf</div>
+      </div>
+      <p class="save-status" id="donateStatus"></p>
     </div>
 
     <button id="signOutBtn" class="btn-ghost-danger">Hisobdan chiqish</button>
