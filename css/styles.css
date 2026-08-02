@@ -423,6 +423,33 @@ footer .brand{justify-content:center;margin-bottom:10px;}
   .settings-row{flex-wrap:wrap;}
 }
 
+.settings-row-desc{align-items:center;gap:20px;}
+.settings-row-title{font-size:.92rem;font-weight:600;color:var(--heading);margin-bottom:3px;}
+.settings-row-desc-text{font-size:.8rem;color:var(--ink-soft);line-height:1.4;max-width:360px;}
+
+.badge-link{
+  background:var(--cream-warm);border:1px solid var(--border-med);color:var(--heading);
+  padding:8px 16px;border-radius:999px;font-size:.85rem;font-weight:600;
+  text-decoration:none;transition:all .2s ease;
+}
+.badge-link:hover{border-color:var(--gold);background:var(--gold-pale);}
+
+.donate-card{
+  background:var(--cream-warm);border:1px dashed var(--border-strong);
+  border-radius:16px;padding:20px;text-align:center;cursor:pointer;transition:all .2s ease;
+}
+.donate-card:hover{border-color:var(--gold);}
+.donate-number{
+  font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;letter-spacing:.03em;
+  color:var(--heading);margin-bottom:6px;
+}
+.donate-name{font-size:.82rem;color:var(--ink-soft);}
+
+@media(max-width:600px){
+  .settings-row-desc{flex-direction:column;align-items:stretch;gap:12px;}
+  .settings-row-desc .cta-btn{width:100%;}
+}
+
 @media(max-width:600px){
   .cta-btn{padding:9px 16px;font-size:.82rem;}
   .brand span{font-size:1rem;}
