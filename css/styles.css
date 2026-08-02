@@ -331,6 +331,7 @@ footer .brand{justify-content:center;margin-bottom:10px;}
 .ghost-btn{background:transparent;color:var(--heading);border-color:var(--heading);}
 .ghost-btn:hover{background:var(--heading);color:var(--green-deep);}
 .install-btn{background:var(--gold);border-color:var(--gold);color:var(--green-deep);}
+.cta-btn:disabled{opacity:.6;cursor:default;pointer-events:none;}
 .install-btn:hover{background:var(--gold-light);border-color:var(--gold-light);}
 
 /* ===== tahajjud hero card (taxminiy ko'rsatkich) ===== */
@@ -341,7 +342,7 @@ footer .brand{justify-content:center;margin-bottom:10px;}
 }
 .tahajjud-hero-simple{text-align:center;}
 .tahajjud-label{font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-light);font-weight:700;display:block;margin-bottom:10px;}
-.tahajjud-time{font-family:'Playfair Display',serif;font-size:3.2rem;font-weight:700;line-height:1;margin-bottom:10px;}
+.tahajjud-time{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;line-height:1.2;margin-bottom:10px;}
 .tahajjud-note{font-size:.88rem;color:rgba(250,245,239,0.75);line-height:1.5;max-width:420px;margin:0 auto;}
 .streak-sub{font-size:.85rem;color:var(--gold-light);margin-top:4px;}
 
